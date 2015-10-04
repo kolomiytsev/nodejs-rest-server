@@ -8,7 +8,7 @@ var express     = require('express'),
 var port = process.env.PORT || 5999;
 
 app.use(bodyParser.json());
-app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
+app.use(bodyParser.json({ type: 'application/json' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //app.use(express.static(__dirname + '/public'));

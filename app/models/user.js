@@ -1,5 +1,4 @@
-var uuid = require('node-uuid'),
-    mongo = require('./db'),
+var mongo = require('./db'),
     userColl = mongo.collection('users');
 
 exports.getAllUsers = function(callback) {
@@ -14,7 +13,6 @@ exports.getAllUsers = function(callback) {
 };
 
 exports.createUser = function(userObj, callback) {
-
     userColl.insertOne(userObj, function (err, result) {
         if (err) {
             callback(err);
