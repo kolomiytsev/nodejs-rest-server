@@ -2,10 +2,7 @@
 
 var should = require('should'),
     request = require('supertest'),
-    correctId = '6b8d7b1b-806c-4fad-86d0-e11bea0972b0',
-    incorrectId = '1f68fd17-0eac-49c5-8958-99094d3b02c0';
-
-
+    uuid = require('node-uuid');
 
 describe('Rest server tests', function () {
     beforeEach(function () {
@@ -17,19 +14,19 @@ describe('Rest server tests', function () {
     });
 
     describe('#routes/positive', function () {
-        it('should return response 200 for get all request', function (done) {
+        it('should return Object in response for get all request', function (done) {
             this.request.get('/users')
-                .expect('Content-Type', /json/)
                 .expect(200)
                 .end(function (err, response) {
                     if (err) {
                         return done(err)
                     }
+                    response.body.should.be.instanceof(Object);
                     done(null)
                 });
         });
 
-        it('should return response 200 for create user request', function (done) {
+        it('should return text response for create user request', function (done) {
             this.request.post('/users/')
                 .send({firstName:'asdas' ,lastName:'asd' , email:'dsad@aasd.ua'  })
                 .expect(200)
@@ -37,53 +34,52 @@ describe('Rest server tests', function () {
                     if (err) {
                         return done(err)
                     }
+                    response.text.should.be.equal('No output for that operation');
                     done(null)
                 });
         });
 
         it('should return response 200 for get user by id request', function (done) {
-            this.request.get('/users/'+correctId)
-                .expect('Content-Type', /json/)
+            this.request.get('/users/'+uuid.v4())
                 .expect(200)
                 .end(function (err, response) {
                     if (err) {
                         return done(err)
                     }
+                    response.text.should.be.equal('No document(s) found with defined criteria!');
                     done(null)
                 });
         });
 
         it('should return response 200 for update user by id request', function (done) {
-            this.request.patch('/users/'+correctId)
+            this.request.patch('/users/'+uuid.v4())
                 .send({firstName:'asd' ,lastName:'asd' , email:'dsad@aasd.ua'  })
-                //.expect('Content-Type', /json/)
                 .expect(200)
                 .end(function (err, response) {
                     if (err) {
                         return done(err)
                     }
+                    response.text.should.be.equal('No output for that operation');
                     done(null)
                 });
         });
 
         it('should return response 200 for delete user by id request', function (done) {
             this.request.delete('/users/42b21c03-7859-4725-8696-1d74ae69e3dc')
-                //.send({firstName:'asdas' ,lastName:'asd' , email:'dsad@aasd.ua'  })
-                //.expect('Content-Type', /json/)
                 .expect(200)
                 .end(function (err, response) {
                     if (err) {
                         return done(err)
                     }
+                    response.text.should.be.equal('No output for that operation');
                     done(null)
                 });
         });
     });
 
     describe('#routes/negative', function () {
-        it('should return response 200 for get all request', function (done) {
+        it('should return Object response for get all request', function (done) {
             this.request.get('/users')
-                .expect('Content-Type', /json/)
                 .expect(200)
                 .end(function (err, response) {
                     if (err) {
@@ -94,7 +90,7 @@ describe('Rest server tests', function () {
                 });
         });
 
-        it('should return response 500 for create user request with invalid post data', function (done) {
+        it('should return response 500 with error details for create user request with invalid post data', function (done) {
             this.request.post('/users')
                 .send({ firstName:'asdas' })
                 .expect(500)
@@ -103,11 +99,12 @@ describe('Rest server tests', function () {
                         return done(err)
                     }
                     response.status.should.be.equal(500);
+                    response.text.should.startWith('Error: Validation Error: check your data');
                     done(null)
                 });
         });
 
-        it('should return response 500 for create user request with invalid post data', function (done) {
+        it('should return response 500 with error details for create user request with invalid post data', function (done) {
             this.request.post('/users')
                 .send('hello')
                 .expect(500)
@@ -116,11 +113,12 @@ describe('Rest server tests', function () {
                         return done(err)
                     }
                     response.status.should.equal(500);
+                    response.text.should.startWith('Error: Validation Error: check your data');
                     done(null)
                 });
         });
 
-        it('should return response 404 for get user by invalid id request', function (done) {
+        it('should return response 404 with error details for get user by invalid id request', function (done) {
             this.request.get('/users/test')
                 .expect(404)
                 .end(function (err, response) {
@@ -133,9 +131,8 @@ describe('Rest server tests', function () {
                 });
         });
 
-        it('should return response 200 with error message for get user by unused id request', function (done) {
-            this.request.get('/users/'+incorrectId)
-                //.expect('Content-Type', /json/)
+        it('should return response 200 with empty result message for get user by unused id request', function (done) {
+            this.request.get('/users/'+uuid.v4())
                 .expect(200)
                 .end(function (err, response) {
                     if (err) {
@@ -149,7 +146,6 @@ describe('Rest server tests', function () {
         it('should return response 404 for update user by invalid id request', function (done) {
             this.request.patch('/users/test')
                 .send({firstName:'asd' ,lastName:'asd' , email:'dsad@aasd.ua'  })
-                //.expect('Content-Type', /json/)
                 .expect(404)
                 .end(function (err, response) {
                     if (err) {
@@ -162,9 +158,8 @@ describe('Rest server tests', function () {
         });
 
         it('should return response 500 for update user by invalid id and invalid data request', function (done) {
-            this.request.patch('/users/'+incorrectId)
+            this.request.patch('/users/'+uuid.v4())
                 .send({firstName:'asd' })
-                //.expect('Content-Type', /json/)
                 .expect(500)
                 .end(function (err, response) {
                     if (err) {
@@ -177,18 +172,15 @@ describe('Rest server tests', function () {
         });
 
         it('should return response 404 for delete user by invalid id request', function (done) {
-            this.request.delete('/users/42b21c03-7859')
-                //.send({firstName:'asdas' ,lastName:'asd' , email:'dsad@aasd.ua'  })
-                //.expect('Content-Type', /json/)
+            this.request.delete('/users/test')
                 .expect(404)
                 .end(function (err, response) {
                     if (err) {
                         return done(err)
                     }
+                    response.text.should.startWith('Error: Validation Error: invalid uuid.');
                     done(null)
                 });
         });
-
-        //couldn't figure out additional incorrect test for delete endpoint
     })
 });
