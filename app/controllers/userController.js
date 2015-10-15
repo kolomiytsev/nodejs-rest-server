@@ -52,10 +52,8 @@ exports.createUser = function (req, res, next) {
         if (err) {
             res.status(500);
             return next(err);
-        } else if (result.length) {
-            res.send('Inserted %d documents into the "users" collection. The documents inserted with "_id" are:', result.length, result);
         } else {
-            res.send('No output for that operation');
+            res.send({id: result.insertedId});
         }
     });
 };

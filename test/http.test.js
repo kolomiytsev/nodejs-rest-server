@@ -4,6 +4,8 @@ var should = require('should'),
     request = require('supertest'),
     uuid = require('node-uuid');
 
+var testUser = { firstName:'asdas' ,lastName:'asd' , email:'dsad@aasd.ua'};
+
 describe('Rest server tests', function () {
     beforeEach(function () {
         this.request = request('http://localhost:5999')
@@ -27,53 +29,54 @@ describe('Rest server tests', function () {
         });
 
         it('should return text response for create user request', function (done) {
-            this.request.post('/users/')
-                .send({firstName:'asdas' ,lastName:'asd' , email:'dsad@aasd.ua'  })
+            this.request.post('/users')
+                .send(testUser)
                 .expect(200)
                 .end(function (err, response) {
                     if (err) {
                         return done(err)
                     }
-                    response.text.should.be.equal('No output for that operation');
+                    response.body.should.have.property('id');
                     done(null)
                 });
         });
 
-        it('should return response 200 for get user by id request', function (done) {
-            this.request.get('/users/'+uuid.v4())
-                .expect(200)
-                .end(function (err, response) {
-                    if (err) {
-                        return done(err)
-                    }
-                    response.text.should.be.equal('No document(s) found with defined criteria!');
-                    done(null)
-                });
+        it('should return response 200 for get user by id request', function(done) {
+            var agent = this.request;
+            agent.post('/users/').send(testUser).end(function(err, response){
+                agent.get('/users/'+response.body.id)
+                    .expect(200)
+                    .end(function(err, res) {
+                        res.body.should.be.instanceof(Object);
+                        res.type.should.be.equal('application/json');
+                        done(null);
+                    });
+            });
         });
 
         it('should return response 200 for update user by id request', function (done) {
-            this.request.patch('/users/'+uuid.v4())
-                .send({firstName:'asd' ,lastName:'asd' , email:'dsad@aasd.ua'  })
-                .expect(200)
-                .end(function (err, response) {
-                    if (err) {
-                        return done(err)
-                    }
-                    response.text.should.be.equal('No output for that operation');
-                    done(null)
-                });
+            var agent = this.request;
+            agent.post('/users/').send(testUser).end(function(err, response){
+                agent.patch('/users/'+response.body.id)
+                    .send({firstName:'asdbbb' ,lastName:'asdbbb' , email:'dsad@gmail.ua'  })
+                    .expect(200)
+                    .end(function(err, res) {
+                        res.text.should.be.equal('No output for that operation');
+                        done(null);
+                    });
+            });
         });
 
         it('should return response 200 for delete user by id request', function (done) {
-            this.request.delete('/users/42b21c03-7859-4725-8696-1d74ae69e3dc')
-                .expect(200)
-                .end(function (err, response) {
-                    if (err) {
-                        return done(err)
-                    }
-                    response.text.should.be.equal('No output for that operation');
-                    done(null)
-                });
+            var agent = this.request;
+            agent.post('/users/').send(testUser).end(function(err, response){
+                agent.delete('/users/'+response.body.id)
+                    .expect(200)
+                    .end(function(err, res) {
+                        res.text.should.be.equal('No output for that operation');
+                        done(null);
+                    });
+            });
         });
     });
 
